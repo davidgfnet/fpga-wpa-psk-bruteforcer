@@ -1,0 +1,77 @@
+# Clock works at 100Mhz
+NET "input_clk" LOC = J1;
+#TIMESPEC TS_input_clk = PERIOD "input_clk" 10 ns HIGH 50 % INPUT_JITTER 100 ps;
+
+# serial port receive & transmit
+NET "uart_rx" LOC = C3;
+NET "uart_tx" LOC = F2 | SLEW="QUIETIO";
+# Async inputs anyway
+NET "uart_rx" TIG;
+NET "uart_tx" TIG;
+
+# TTL level serial port: ja3 = rxd, ja2 = txd
+NET "aux_uart_tx" LOC = C1 | SLEW="QUIETIO";
+NET "aux_uart_rx" LOC = F1;
+NET "aux_uart_rx" PULLUP;
+NET "aux_uart_tx" TIG;
+NET "aux_uart_rx" TIG;
+
+# Button 0
+NET "reset" LOC = J3;
+# Kinda asyncronous :D
+NET "reset" TIG;
+
+NET "switch_config[0]" LOC = D6;
+NET "switch_config[1]" LOC = C6;
+NET "switch_config[2]" LOC = C8;
+
+NET "led[0]" LOC = "A18";
+NET "led[1]" LOC = "B18";
+NET "led[2]" LOC = "A17";
+NET "led[3]" LOC = "A16";
+
+# Ignore I/O timing!
+NET "switch_config[*]" TIG;
+NET "led[*]" TIG;
+
+# Clock set to 190MHz but usually we get around 150MHz (timing closue is really difficult!)
+NET "clk_100" TNM_NET = "clk_100";
+NET "core_clk" TNM_NET = "core_clk";
+TIMESPEC TS_clk_100 = PERIOD "clk_100" 40 MHz HIGH 50 %;
+TIMESPEC TS_core_clk = PERIOD "core_clk" 190 MHz HIGH 50 %;
+
+# Ignore paths between clocks
+TIMESPEC TS_01 = FROM "clk_100" TO "core_clk" TIG ;
+TIMESPEC TS_02 = FROM "core_clk" TO "clk_100" TIG ;
+
+# PlanAhead Generated physical constraints 
+AREA_GROUP "SlowBlock" RANGE=SLICE_X116Y174:SLICE_X127Y189, SLICE_X0Y174:SLICE_X115Y191;
+AREA_GROUP "SlowBlock" RANGE=RAMB16_X0Y88:RAMB16_X5Y94;
+AREA_GROUP "SlowBlock" RANGE=RAMB8_X0Y88:RAMB8_X5Y95;
+AREA_GROUP "FastBlockLeft" RANGE=SLICE_X0Y13:SLICE_X67Y173;
+AREA_GROUP "FastBlockLeft" RANGE=RAMB16_X0Y84:RAMB16_X2Y8;
+AREA_GROUP "FastBlockLeft" RANGE=RAMB8_X0Y85:RAMB8_X2Y8;
+AREA_GROUP "FastBlockRight" RANGE=SLICE_X68Y13:SLICE_X127Y173;
+AREA_GROUP "FastBlockRight" RANGE=RAMB16_X3Y8:RAMB16_X5Y84;
+AREA_GROUP "FastBlockRight" RANGE=RAMB8_X3Y8:RAMB8_X5Y85;
+
+#AREA_GROUP "FastBlockLeftSmall" RANGE=SLICE_X0Y8:SLICE_X33Y12;
+#AREA_GROUP "FastBlockLeftSmall" RANGE=RAMB16_X0Y4:RAMB16_X1Y4;
+#AREA_GROUP "FastBlockLeftSmall" RANGE=RAMB8_X0Y4:RAMB8_X1Y5;
+#AREA_GROUP "FastBlockRightSmall" RANGE=SLICE_X98Y8:SLICE_X127Y12;
+#AREA_GROUP "FastBlockRightSmall" RANGE=RAMB16_X4Y4:RAMB16_X5Y4;
+#AREA_GROUP "FastBlockRightSmall" RANGE=RAMB8_X4Y4:RAMB8_X5Y5;
+
+INST "bruteforcer/hashpipe/stage1*" AREA_GROUP = "FastBlockLeft";
+INST "bruteforcer/hashpipe/stage2*" AREA_GROUP = "FastBlockRight";
+INST "bruteforcer/hashpipe/global_fsm_end*" AREA_GROUP = "FastBlockRight";
+
+INST "bruteforcer/aux_uart*" AREA_GROUP = "SlowBlock";
+INST "bruteforcer/sys_uart*" AREA_GROUP = "SlowBlock";
+INST "bruteforcer/genpipe*" AREA_GROUP = "SlowBlock";
+INST "bruteforcer/miccalc*" AREA_GROUP = "SlowBlock";
+INST "bruteforcer/word_match_fifo*" AREA_GROUP = "SlowBlock";
+INST "bruteforcer/auxuart_fifo*" AREA_GROUP = "SlowBlock";
+
+
+

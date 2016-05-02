@@ -1,0 +1,5 @@
+
+Firmware in here should be good for 190MHz runs.
+Check https://github.com/davidgfnet/fpga-hash-bruteforcer
+for more info (they use the same infrastructure, controller
+and most stuff).
