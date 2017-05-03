@@ -42,6 +42,7 @@ int parse_pcap(const char * pcap_file, t_handshake * hs, std::string desired_bss
 			if (desired_bssid == hexify((char*)&packet[10], 6)) {
 				memset(hs->essid, 0, sizeof(hs->essid));
 				memcpy(hs->essid, &ssid_params[2], ssid_len);
+				ok |= 4;
 			}
 		}
 		if (packet[0] == 0x88 && header.caplen >= 26 + 8 + 9) {
@@ -103,12 +104,12 @@ int parse_pcap(const char * pcap_file, t_handshake * hs, std::string desired_bss
 			}
 		}
 
-		if (ok == 3) break;
+		if (ok == 7) break;
 	}
 
 	pcap_close(handle);
 
-	if (ok == 3) {
+	if (ok == 7) {
 		std::cerr << "Got handshake for BSSID " << hexify(hs->bssid, 6);
 		std::cerr << " and client " << hexify(hs->assid, 6) << std::endl;
 
@@ -119,6 +120,6 @@ int parse_pcap(const char * pcap_file, t_handshake * hs, std::string desired_bss
 		std::cerr << "EAPOL is " << hexify(hs->eapol, hs->eapol_len) << std::endl;
 	}
 
-	return (ok == 3);
+	return (ok == 7);
 }
 
